@@ -101,9 +101,9 @@ set(custom_libs OpenGV
 				OpenSfM
 				CMVS
 				Catkin
-				Ecto
+				Ecto)
 				# LAStools
-				PDAL)
+				# PDAL)
 
 foreach(lib ${custom_libs})
 	SETUP_EXTERNAL_PROJECT_CUSTOM(${lib})
