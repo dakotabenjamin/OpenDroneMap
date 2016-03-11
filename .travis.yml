@@ -11,5 +11,5 @@ install:
   - pip install catkin-pkg
   - "bash configure.sh"
   - "mkdir build && cd build && cmake .. && make && cd .."
-  - "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/SuperBuild/install/lib"
+  - "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib"
 script: nosetests
