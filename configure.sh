@@ -27,7 +27,7 @@ sudo apt-get install build-essential \
                      python-pip \
                      libgdal-dev \
                      libgeotiff-dev \
-                     pkg-config -y
+                     pkg-config -y -qq
 if [ $? -ne 0 ] 
 then
     echo -e "\e[1;31mERROR: \e[39mWhen Installing Required Requisites\e[0m"
@@ -53,7 +53,7 @@ sudo apt-get install libgtk2.0-dev \
                      libxext-dev \
                      liblapack-dev \
                      libeigen3-dev \
-                     libvtk5-dev -y
+                     libvtk5-dev -y -qq
 if [ $? -ne 0 ] 
 then
     echo -e "\e[1;31mERROR: \e[39mError when Installing Dependencies Requisites\e[0m"
@@ -74,7 +74,7 @@ sudo apt-get install python-networkx \
                      libboost-regex-dev \
                      libboost-python-dev \
                      libboost-date-time-dev \
-                     libboost-thread-dev -y
+                     libboost-thread-dev -y -qq
 
 sudo pip install -U PyYAML \
                     exifread \
@@ -91,7 +91,7 @@ echo -e "\e[1;34mInstalling Ecto Dependencies\e[0;39m"
 sudo pip install -U catkin-pkg
 sudo apt-get install python-empy \
                      python-nose \
-                     python-pyside -y
+                     python-pyside -y -qq
 if [ $? -ne 0 ] 
 then
     echo -e "\e[1;31mERROR: \e[39mError when Installing Ecto Dependencies\e[0m"
@@ -103,7 +103,7 @@ echo -e "\e[1;34mInstalling OpenDroneMap Dependencies\e[0;39m"
 sudo apt-get install python-pyexiv2 \
                      python-scipy \
                      jhead \
-                     liblas-bin -y
+                     liblas-bin -y -qq
 if [ $? -ne 0 ] 
 then
     echo -e "\e[1;31mERROR: \e[39mError when Installing OpenDroneMap Dependencies\e[0m"
@@ -115,6 +115,7 @@ NUM_CORES=`grep -c processor /proc/cpuinfo`
 
 ## Add SuperBuild path to the python path
 export PYTHONPATH=$PYTHONPATH:`pwd`/SuperBuild/install/lib/python2.7/dist-packages:`pwd`/SuperBuild/src/opensfm
+echo ${PYTHONPATH}
 
 ## Compile SuperBuild
 cd SuperBuild
