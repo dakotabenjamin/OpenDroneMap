@@ -9,7 +9,7 @@ branches:
 install:
   - pip install --upgrade numpy
   - pip install catkin-pkg 
-  - sudo apt-get install python-opencv
+  - sudo apt-get install python-opencv --y
   - pip install pyopencv
   - "bash configure.sh"
   - "mkdir build && cd build && cmake .. && make && cd .."
