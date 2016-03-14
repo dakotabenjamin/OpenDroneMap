@@ -8,7 +8,9 @@ branches:
     - edgarriba-cmake
 install:
   - pip install --upgrade numpy
-  - pip install catkin-pkg
+  - pip install catkin-pkg 
+  - sudo apt-get install python-opencv
+  - pip install pyopencv
   - "bash configure.sh"
   - "mkdir build && cd build && cmake .. && make && cd .."
   - "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib"
