@@ -12,5 +12,5 @@ install:
   - "bash configure.sh"
   - "mkdir build && cd build && cmake .. && make && cd .."
   - "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib"
-  - "export PYTHONPATH=$PYTHONPATH:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib/python2.7/dist-packages:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/src/opensfm"
+  - "export PYTHONPATH=$PYTHONPATH:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib/python2.7/dist-packages:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/install/lib/python2.7/site-packages:/home/travis/build/dakotabenjamin/OpenDroneMap/SuperBuild/src/opensfm"
 script: nosetests
