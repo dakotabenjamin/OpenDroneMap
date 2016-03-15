@@ -6,7 +6,6 @@ from opendm import system
 from opendm import context
 
 import sys
-import ecto
 import os
 
 from scripts.odm_app import ODMApp
@@ -22,6 +21,8 @@ os.environ['LD_LIBRARY_PATH'] = ":".join((os.environ['LD_LIBRARY_PATH'], os.path
 # os.environ['PYTHONPATH'] = ":".join(pypath)
 
 sys.path.append(pypath)                                    
+
+import ecto
 
 def usage():
     log.ODM_ERROR('USAGE: %s --project-path [project_path]' % sys.argv[0])
