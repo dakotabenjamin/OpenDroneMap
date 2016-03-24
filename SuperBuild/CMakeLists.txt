@@ -101,7 +101,9 @@ set(custom_libs OpenGV
 				CMVS
 				Catkin
 				Ecto
-				PDAL)
+				PDAL
+				MvsTexturing
+)
 
 foreach(lib ${custom_libs})
 	SETUP_EXTERNAL_PROJECT_CUSTOM(${lib})
