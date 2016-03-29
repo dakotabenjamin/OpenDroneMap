@@ -13,7 +13,6 @@ class RerunFrom(argparse.Action):
 
 
 parser = argparse.ArgumentParser(description='OpenDroneMap')
-<<<<<<< HEAD
 
 
 def config():
