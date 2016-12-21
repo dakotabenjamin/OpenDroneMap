@@ -3,7 +3,7 @@ import context
 
 # parse arguments
 processopts = ['resize', 'opensfm', 'cmvs', 'pmvs',
-               'odm_meshing', 'odm_texturing', 'odm_georeferencing',
+               'odm_meshing', 'mvs_texturing', 'odm_georeferencing',
                'odm_orthophoto']
 
 
@@ -81,7 +81,7 @@ def config():
                         type=float,
                         help=('Ignore matched keypoints if the two images share '
                               'less than <float> percent of keypoints. Default:'
-                              ' $(default)s'))
+                              ' %(default)s'))
 
     parser.add_argument('--matcher-ratio',
                         metavar='<float>',
@@ -109,63 +109,6 @@ def config():
                         help='Distance threshold in meters to find pre-matching '
                              'images based on GPS exif data. Set to 0 to skip '
                              'pre-matching. Default: %(default)s')
-
-    parser.add_argument('--cmvs-maxImages',
-                        metavar='<integer>',
-                        default=500,
-                        type=int,
-                        help='The maximum number of images per cluster. '
-                             'Default: %(default)s')
-
-    parser.add_argument('--pmvs-level',
-                        metavar='<positive integer>',
-                        default=1,
-                        type=int,
-                        help=('The level in the image pyramid that is used '
-                              'for the computation. see '
-                              'http://www.di.ens.fr/pmvs/documentation.html for '
-                              'more pmvs documentation. Default: %(default)s'))
-
-    parser.add_argument('--pmvs-csize',
-                        metavar='< positive integer>',
-                        default=2,
-                        type=int,
-                        help='Cell size controls the density of reconstructions'
-                             'Default: %(default)s')
-
-    parser.add_argument('--pmvs-threshold',
-                        metavar='<float: -1.0 <= x <= 1.0>',
-                        default=0.7,
-                        type=float,
-                        help=('A patch reconstruction is accepted as a success '
-                              'and kept if its associated photometric consistency '
-                              'measure is above this threshold. Default: %(default)s'))
-
-    parser.add_argument('--pmvs-wsize',
-                        metavar='<positive integer>',
-                        default=7,
-                        type=int,
-                        help='pmvs samples wsize x wsize pixel colors from '
-                             'each image to compute photometric consistency '
-                             'score. For example, when wsize=7, 7x7=49 pixel '
-                             'colors are sampled in each image. Increasing the '
-                             'value leads to more stable reconstructions, but '
-                             'the program becomes slower. Default: %(default)s')
-
-    parser.add_argument('--pmvs-minImageNum',
-                        metavar='<positive integer>',
-                        default=3,
-                        type=int,
-                        help=('Each 3D point must be visible in at least '
-                              'minImageNum images for being reconstructed. 3 is '
-                              'suggested in general. Default: %(default)s'))
-
-    parser.add_argument('--pmvs-num-cores',
-                        metavar='<positive integer>',
-                        default=context.num_cores,
-                        type=int,
-                        help=('The maximum number of cores to use in dense '
-                              'reconstruction. Default: %(default)s'))
 
     parser.add_argument('--odm_meshing-maxVertexCount',
                         metavar='<positive integer>',
@@ -199,6 +142,46 @@ def config():
                               'times slightly but helps reduce memory usage. '
                               'Default: %(default)s'))
 
+    parser.add_argument('--mvs_texturing-dataTerm',
+                        metavar='<string>',
+                        default='gmi',
+                        help=('Data term: [area, gmi]. Default:  %(default)s'))
+
+    parser.add_argument('--mvs_texturing-outlierRemovalType',
+                        metavar='<string>',
+                        default='none',
+                        help=('Type of photometric outlier removal method: ' 
+                              '[none, gauss_damping, gauss_clamping]. Default: '  
+                              '%(default)s'))
+
+    parser.add_argument('--mvs_texturing-skipGeometricVisibilityTest',
+                        action='store_true',
+                        default=False,
+                        help=('Skip geometric visibility test. Default:  %(default)s'))
+
+    parser.add_argument('--mvs_texturing-skipGlobalSeamLeveling',
+                        action='store_true',
+                        default=False,
+                        help=('Skip geometric visibility test. Default:  %(default)s'))
+
+    parser.add_argument('--mvs_texturing-skipLocalSeamLeveling',
+                        action='store_true',
+                        default=False,
+                        help=('Skip local seam blending. Default:  %(default)s'))
+
+    parser.add_argument('--mvs_texturing-skipHoleFilling',
+                        action='store_true',
+                        default=False,
+                        help=('Skip filling of holes in the mesh. Default:  %(default)s'))
+
+    parser.add_argument('--mvs_texturing-keepUnseenFaces',
+                        action='store_true',
+                        default=False,
+                        help=('Keep faces in the mesh that are not seen in any camera. ' 
+                              'Default:  %(default)s'))
+
+    # Old odm_texturing arguments
+
     parser.add_argument('--odm_texturing-textureResolution',
                         metavar='<positive integer>',
                         default=4096,
@@ -212,6 +195,8 @@ def config():
                         type=int,
                         help=('The resolution to rescale the images performing '
                               'the texturing. Default: %(default)s'))
+
+    # End of old odm_texturing arguments
 
     parser.add_argument('--odm_georeferencing-gcpFile',
                         metavar='<path string>',
@@ -239,6 +224,12 @@ def config():
                         action='store_true',
                         default=False,
                         help='compress the results using gunzip')
+
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        default=False,
+                        help='Print additional messages to the console\n'
+                             'Default: %(default)s')
 
     parser.add_argument('--time',
                         action='store_true',

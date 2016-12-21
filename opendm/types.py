@@ -25,9 +25,9 @@ class ODM_Photo:
         self.focal_length = None
         self.focal_length_px = None
         # other attributes
-        self.camera_make = None
-        self.camera_model = None
-        self.make_model = None
+        self.camera_make = ''
+        self.camera_model = ''
+        self.make_model = ''
         # parse values from metadata
         self.parse_pyexiv2_values(self.path_file, force_focal, force_ccd)
         # compute focal length into pixels
@@ -69,8 +69,11 @@ class ODM_Photo:
                     self.focal_length = float(val)
             except (pyexiv2.ExifValueError, ValueError) as e:
                 pass
+            except NotImplementedError as e:
+                pass
 
-        self.make_model = sensor_string(self.camera_make, self.camera_model)
+        if self.camera_make and self.camera_model:
+            self.make_model = sensor_string(self.camera_make, self.camera_model)
 
         # needed to do that since sometimes metadata contains wrong data
         img = cv2.imread(_path_file)
@@ -169,11 +172,6 @@ class ODM_GeoRef(object):
                   'epsg': self.epsg,
                   'xml': pdalXML}
 
-        # call txt2las
-        # system.run('{bin}/txt2las -i {f_in} -o {f_out} -skip 30 -parse xyzRGBssss ' \
-        #           '-set_scale 0.01 0.01 0.01 -set_offset {east} {north} 0 '  \
-        #           '-translate_xyz 0 -epsg {epsg}'.format(**kwargs))
-        #           
         # create pipeline file transform.xml to enable transformation
         pipelineXml = '<?xml version=\"1.0\" encoding=\"utf-8\"?>'
         pipelineXml += '<Pipeline version=\"1.0\">'
@@ -340,7 +338,6 @@ class ODM_Tree(object):
         self.dataset_raw = io.join_paths(self.root_path, 'images')
         self.dataset_resize = io.join_paths(self.root_path, 'images_resize')
         self.opensfm = io.join_paths(self.root_path, 'opensfm')
-        self.pmvs = io.join_paths(self.root_path, 'pmvs')
         self.odm_meshing = io.join_paths(self.root_path, 'odm_meshing')
         self.odm_texturing = io.join_paths(self.root_path, 'odm_texturing')
         self.odm_georeferencing = io.join_paths(self.root_path, 'odm_georeferencing')
@@ -357,23 +354,18 @@ class ODM_Tree(object):
         self.opensfm_bundle_list = io.join_paths(self.opensfm, 'list_r000.out')
         self.opensfm_image_list = io.join_paths(self.opensfm, 'image_list.txt')
         self.opensfm_reconstruction = io.join_paths(self.opensfm, 'reconstruction.json')
-
-        # pmvs
-        self.pmvs_rec_path = io.join_paths(self.pmvs, 'recon0')
-        self.pmvs_bundle = io.join_paths(self.pmvs_rec_path, 'bundle.rd.out')
-        self.pmvs_visdat = io.join_paths(self.pmvs_rec_path, 'vis.dat')
-        self.pmvs_options = io.join_paths(self.pmvs_rec_path, 'pmvs_options.txt')
-        self.pmvs_model = io.join_paths(self.pmvs_rec_path, 'models/option-0000.ply')
+        self.opensfm_model = io.join_paths(self.opensfm, 'depthmaps/merged.ply')
 
         # odm_meshing
         self.odm_mesh = io.join_paths(self.odm_meshing, 'odm_mesh.ply')
         self.odm_meshing_log = io.join_paths(self.odm_meshing, 'odm_meshing_log.txt')
 
-        # odm_texturing
+        # texturing
         self.odm_textured_model_obj = io.join_paths(
             self.odm_texturing, 'odm_textured_model.obj')
         self.odm_textured_model_mtl = io.join_paths(
             self.odm_texturing, 'odm_textured_model.mtl')
+# Log is only used by old odm_texturing
         self.odm_texuring_log = io.join_paths(
             self.odm_texturing, 'odm_texturing_log.txt')
 
@@ -404,6 +396,6 @@ class ODM_Tree(object):
         # odm_orthophoto
         self.odm_orthophoto_file = io.join_paths(self.odm_orthophoto, 'odm_orthophoto.png')
         self.odm_orthophoto_tif = io.join_paths(self.odm_orthophoto, 'odm_orthophoto.tif')
-        self.odm_orthophoto_corners = io.join_paths(self.odm_orthophoto, 'odm_orthphoto_corners.txt')
+        self.odm_orthophoto_corners = io.join_paths(self.odm_orthophoto, 'odm_orthophoto_corners.txt')
         self.odm_orthophoto_log = io.join_paths(self.odm_orthophoto, 'odm_orthophoto_log.txt')
         self.odm_orthophoto_tif_log = io.join_paths(self.odm_orthophoto, 'gdal_translate_log.txt')

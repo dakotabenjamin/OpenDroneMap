@@ -39,7 +39,6 @@ class ODMOpenSfMCell(ecto.Cell):
 
         # create working directories     
         system.mkdir_p(tree.opensfm)
-        system.mkdir_p(tree.pmvs)
 
         # check if we rerun cell or not
         rerun_cell = (args.rerun is not None and
@@ -48,9 +47,10 @@ class ODMOpenSfMCell(ecto.Cell):
                      (args.rerun_from is not None and
                       'opensfm' in args.rerun_from)
 
-        # check if reconstruction was done before
+        output_file = tree.opensfm_model
 
-        if not io.file_exists(tree.opensfm_reconstruction) or rerun_cell:
+        # check if reconstruction was done before
+        if not io.file_exists(output_file) or rerun_cell:
             # create file list
             list_path = io.join_paths(tree.opensfm, 'image_list.txt')
             with open(list_path, 'w') as fout:
@@ -77,12 +77,17 @@ class ODMOpenSfMCell(ecto.Cell):
             # run OpenSfM reconstruction
             system.run('PYTHONPATH=%s %s/bin/run_all %s' %
                        (context.pyopencv_path, context.opensfm_path, tree.opensfm))
+            system.run('PYTHONPATH=%s %s/bin/opensfm export_visualsfm %s' %
+                       (context.pyopencv_path, context.opensfm_path, tree.opensfm))
+            system.run('PYTHONPATH=%s %s/bin/opensfm undistort %s' %
+                       (context.pyopencv_path, context.opensfm_path, tree.opensfm))
+            system.run('PYTHONPATH=%s %s/bin/opensfm compute_depthmaps %s' %
+                       (context.pyopencv_path, context.opensfm_path, tree.opensfm))
         else:
             log.ODM_WARNING('Found a valid OpenSfM file in: %s' %
                             tree.opensfm_reconstruction)
 
         # check if reconstruction was exported to bundler before
-
         if not io.file_exists(tree.opensfm_bundle_list) or rerun_cell:
             # convert back to bundler's format
             system.run('PYTHONPATH=%s %s/bin/export_bundler %s' %
@@ -90,15 +95,6 @@ class ODMOpenSfMCell(ecto.Cell):
         else:
             log.ODM_WARNING('Found a valid Bundler file in: %s' %
                             tree.opensfm_reconstruction)
-
-        # check if reconstruction was exported to pmvs before
-
-        if not io.file_exists(tree.pmvs_visdat) or rerun_cell:
-            # run PMVS converter
-            system.run('PYTHONPATH=%s %s/bin/export_pmvs %s --output %s' %
-                       (context.pyopencv_path, context.opensfm_path, tree.opensfm, tree.pmvs))
-        else:
-            log.ODM_WARNING('Found a valid CMVS file in: %s' % tree.pmvs_visdat)
 
         if args.time:
             system.benchmark(start_time, tree.benchmarking, 'OpenSfM')

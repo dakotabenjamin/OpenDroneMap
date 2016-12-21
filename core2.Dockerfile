@@ -24,6 +24,10 @@ COPY /tests/ /code/tests/
 # Update submodules
 RUN git submodule init && git submodule update
 
+# Replace g++ and gcc with our own scripts
+COPY /docker/ /code/docker/
+RUN mv -v /usr/bin/gcc /usr/bin/gcc_real && mv -v /usr/bin/g++ /usr/bin/g++_real && cp -v /code/docker/gcc /usr/bin/gcc && cp -v /code/docker/g++ /usr/bin/g++
+
 #Compile code in SuperBuild and root directories
 RUN cd SuperBuild && mkdir build && cd build && cmake .. && make -j$(nproc) \
     && cd ../.. && mkdir build && cd build && cmake .. && make -j$(nproc)
