@@ -288,6 +288,11 @@ def config():
                         help=('Orthophoto ground resolution in pixels/meter'
                               'Default: %(default)s'))
 
+    parser.add_argument('--ndvi',
+                        action='store_true',
+                        default=False,
+                        help='Calculate NDVI for CIR images')
+
     parser.add_argument('--zip-results',
                         action='store_true',
                         default=False,

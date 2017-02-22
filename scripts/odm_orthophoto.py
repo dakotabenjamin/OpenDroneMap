@@ -111,6 +111,40 @@ class ODMOrthoPhotoCell(ecto.Cell):
                 if not geotiffcreated:
                     log.ODM_WARNING('No geo-referenced orthophoto created due '
                                     'to missing geo-referencing or corner coordinates.')
+                if args.ndvi:
+                    import numpy
+                    # Take the orthophoto and do nir - vis / nir + vis
+                    # Temporary hardcoded bands
+                    nirband = 1
+                    visband = 2
+                    # import raster
+                    raster = gdal.Open(tree.odm_orthophoto_tif)
+                    rarray = raster.ReadAsArray()
+
+                    # Export info
+                    outfile = 'odm_ndvi.tif' # TODO: Put in file tree
+
+                    # parse out bands
+                    nirb = rarray[nirband - 1]
+                    visb = rarray[visband - 1]
+
+                    visb = visb.astype(float)
+                    nirb = nirb.astype(float)
+
+                    # nirb = numpy.ma.array(nirb, mask = ( nirb == 0 ))
+                    # visb = numpy.ma.array(visb, mask = ( nirb == 0 ))
+
+                    # for each cell, calculate ndvi (masking out where divide by 0)
+                    mask = numpy.not_equal((nirb + visb), 0)
+                    ndvi = numpy.choose(mask, (-99, (nirb - visb) / (nirb + visb)))
+
+                    # export raster
+                    # get resolutions
+                    out_driver = gdal.GetDriverByName('GTiff').Create(outfile, int(ndvi.shape[1]), int(ndvi.shape[0]), 1)
+                    outband = out_driver.GetRasterBand(1)
+                    outband.WriteArray(ndvi)
+
+
 
         else:
             log.ODM_WARNING('Found a valid orthophoto in: %s' % tree.odm_orthophoto_file)
