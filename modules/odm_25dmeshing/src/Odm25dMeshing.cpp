@@ -14,15 +14,15 @@ int Odm25dMeshing::run(int argc, char **argv) {
 
 		parseArguments(argc, argv);
 
-		std::vector<Point3> groundPoints, nongroundPoints;
+		pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints(new pcl::PointCloud<pcl::PointXYZ>()),
+											nongroundPoints(new pcl::PointCloud<pcl::PointXYZ>()),
+											bucket(new pcl::PointCloud<pcl::PointXYZ>());
 
 		loadPointCloud(inputFile, groundPoints, nongroundPoints);
 
-		std::vector<Point3> bucket;
-		preparePoints(groundPoints, bucket);
-		preparePoints(nongroundPoints, bucket);
-
-		buildMesh(bucket, outputFile);
+		preparePoints(groundPoints, nongroundPoints, bucket);
+//
+//		buildMesh(bucket, outputFile);
 
 	} catch (const Odm25dMeshingException& e) {
 		log.setIsPrintingInCout(true);
@@ -42,6 +42,64 @@ int Odm25dMeshing::run(int argc, char **argv) {
 	log.printToFile(logFilePath);
 
 	return EXIT_SUCCESS;
+}
+
+void Odm25dMeshing::preparePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints,
+		pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints,
+		pcl::PointCloud<pcl::PointXYZ>::Ptr destination){
+
+	const int K = 24,
+			  MIN_CLUSTER_SIZE = 100;
+
+	// Extract nonground normals
+	pcl::PointCloud<pcl::Normal>::Ptr nongroundNormals (new pcl::PointCloud<pcl::Normal>);
+	pcl::search::Search<pcl::PointXYZ>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> > (new pcl::search::KdTree<pcl::PointXYZ>);
+
+	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
+	ne.setInputCloud (nongroundPoints);
+	ne.setSearchMethod(tree);
+	ne.setRadiusSearch (0.1);
+	ne.compute(*nongroundNormals);
+
+	std::vector <pcl::PointIndices> clusters;
+	pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
+	reg.setMinClusterSize (MIN_CLUSTER_SIZE);
+	reg.setMaxClusterSize (nongroundPoints->size());
+	reg.setSearchMethod (tree);
+	reg.setNumberOfNeighbours (K);
+	reg.setInputCloud (nongroundPoints);
+	reg.setInputNormals (nongroundNormals);
+	reg.setSmoothnessThreshold (45 / 180.0 * M_PI);
+	reg.setCurvatureThreshold (1);
+	reg.setResidualTestFlag(true);
+	reg.extract (clusters);
+
+	// TODO: remove
+	pcl::io::savePLYFile("colored.ply", *reg.getColoredCloud());
+
+	// TODO: smooth ground points via MLS
+
+	// TODO: for each cluster
+	// - Smooth via MLS
+	// - Compute 2D convex
+	// - Remove points that fall within convex hull (in ground dataset, via crophull)
+	// - For each convex hull point, find nearest neighbor in ground dataset, use Z value to create a skirt
+	// - merge into bucket
+
+	// TODO: triangulate
+
+//	pcl::MovingLeastSquares<pcl::PointXYZ, pcl::PointNormal> mls;
+//
+//	mls.setComputeNormals (true);
+//
+//	// Set parameters
+//	mls.setInputCloud (cloud);
+//	mls.setPolynomialFit (true);
+//	mls.setSearchMethod (tree);
+//	mls.setSearchRadius (0.03);
+//
+//	// Reconstruct
+//	mls.process (mls_points);
 }
 
 void Odm25dMeshing::parseArguments(int argc, char **argv) {
@@ -122,7 +180,9 @@ void Odm25dMeshing::parseArguments(int argc, char **argv) {
 	}
 }
 
-void Odm25dMeshing::loadPointCloud(const std::string &inputFile, std::vector<Point3> &groundPoints, std::vector<Point3> &nongroundPoints){
+void Odm25dMeshing::loadPointCloud(const std::string &inputFile,
+		pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints,
+		pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints){
 	  PlyInterpreter interpreter(groundPoints, nongroundPoints);
 
 	  std::ifstream in(inputFile);
@@ -131,75 +191,9 @@ void Odm25dMeshing::loadPointCloud(const std::string &inputFile, std::vector<Poi
 		  				"Error when reading points from:\n" + inputFile + "\n");
 	  }
 
-	  log << "Loaded " << groundPoints.size() << " ground points\n";
-	  log << "Loaded " << nongroundPoints.size() << " non-ground points\n";
+	  log << "Loaded " << groundPoints->size() << " ground points\n";
+	  log << "Loaded " << nongroundPoints->size() << " non-ground points\n";
 
-}
-
-void Odm25dMeshing::preparePoints(const std::vector<Point3>& points, const std::vector<Point3> &destination){
-	const unsigned int NEIGHBORS = 24;
-
-	size_t pointCount = points.size();
-
-	log << "Computing points average spacing... ";
-
-	FT avgSpacing = CGAL::compute_average_spacing<Concurrency_tag>(
-			points.begin(),
-			points.end(),
-			NEIGHBORS);
-
-	log << avgSpacing << "\n";
-
-	log << "Grid Z sampling... ";
-
-	double gridStep = avgSpacing / 2.0;
-	Kernel::Iso_cuboid_3 bbox = CGAL::bounding_box(points.begin(), points.end());
-	Vector3 boxDiag = bbox.max() - bbox.min();
-
-	int gridWidth = 1 + static_cast<unsigned>(boxDiag.x() / gridStep + 0.5);
-	int gridHeight = 1 + static_cast<unsigned>(boxDiag.y() / gridStep + 0.5);
-
-	#define KEY(i, j) (i * gridWidth + j)
-
-	std::unordered_map<int, Point3> grid;
-
-	for (size_t c = 0; c < pointCount; c++){
-		const Point3 &p = points[c];
-		Vector3 relativePos = p - bbox.min();
-		int i = static_cast<int>((relativePos.x() / gridStep + 0.5));
-		int j = static_cast<int>((relativePos.y() / gridStep + 0.5));
-
-		if ((i >= 0 && i < gridWidth) && (j >= 0 && j < gridHeight)){
-			int key = KEY(i, j);
-
-			if (grid.find(key) == grid.end()){
-				grid[key] = p;
-			}else if (p.z() > grid[key].z()){
-				grid[key] = p;
-			}
-		}
-	}
-
-	std::vector<Point3> gridPoints;
-	for ( auto it = grid.begin(); it != grid.end(); ++it ){
-		gridPoints.push_back(it->second);
-	}
-
-	pointCount = gridPoints.size();
-	log << "sampled " << pointCount << " points\n";
-
-	const double RETAIN_PERCENTAGE = std::min<double>(100., 100. * static_cast<double>(maxVertexCount) / static_cast<double>(pointCount));   // percentage of points to retain.
-
-	log << "Performing weighted locally optimal projection simplification and regularization (retain: " << RETAIN_PERCENTAGE << "%, iterate: " << wlopIterations << ")" << "\n";
-
-	CGAL::wlop_simplify_and_regularize_point_set<Concurrency_tag>(
-			gridPoints.begin(),
-			gridPoints.end(),
-			std::back_inserter(destination),
-			RETAIN_PERCENTAGE,
-			-1,
-			wlopIterations,
-			true);
 }
 
 void Odm25dMeshing::buildMesh(const std::vector<Point3>& points, const std::string &outputFile){

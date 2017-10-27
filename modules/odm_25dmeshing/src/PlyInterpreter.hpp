@@ -5,20 +5,21 @@
 #include <fstream>
 #include <limits>
 
+#include <pcl/point_types.h>
+#include <pcl/common/projection_matrix.h>
+
 #include <CGAL/property_map.h>
 #include "read_ply_points.hpp"
-
 #include "CGAL.hpp"
 
 class PlyInterpreter {
-	std::vector<Point3>& groundPoints;
-	std::vector<Point3>& nongroundPoints;
-
+	pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints;
+	pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints;
 
 	bool warnedClassificationMissing = false;
 
 	public:
-	 PlyInterpreter (std::vector<Point3>& groundPoints, std::vector<Point3>& nongroundPoints)
+	 PlyInterpreter (pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints, pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints)
 	    : groundPoints (groundPoints), nongroundPoints(nongroundPoints)
 	  { }
 	  bool is_applicable (CGAL::Ply_reader& reader);

@@ -6,7 +6,19 @@
 #include <unordered_map>
 #include <queue>
 
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/search/search.h>
+#include <pcl/search/kdtree.h>
+#include <pcl/segmentation/region_growing.h>
+#include <pcl/segmentation/impl/region_growing.hpp>
+#include <pcl/surface/mls.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/point_types.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/surface/mls.h>
+
 #include "CGAL.hpp"
+
 #include "Logger.hpp"
 #include "PlyInterpreter.hpp"
 
@@ -38,17 +50,21 @@ private:
 	/*!
 	 * \brief loadPointCloud    Loads a PLY file with points from file.
 	 */
-	void loadPointCloud(const std::string &inputFile, const std::vector<Point3> &groundPoints, const std::vector<Point3> &nongroundPoints);
+	void loadPointCloud(const std::string &inputFile,
+			pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints,
+			pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints);
 
 	/*!
 	 * \brief preparePoints    Does gridding, smoothing, and places the results in destination
 	 */
-	void preparePoints(const std::vector<Point3>& points, const std::vector<Point3> &destination);
+	void preparePoints(pcl::PointCloud<pcl::PointXYZ>::Ptr groundPoints,
+			pcl::PointCloud<pcl::PointXYZ>::Ptr nongroundPoints,
+			pcl::PointCloud<pcl::PointXYZ>::Ptr destination);
 
 	/*!
 	 * \brief loadPointCloud    Builds a 2.5D mesh from loaded points
 	 */
-	void buildMesh(std::vector<Point3>& points, const std::string &outputFile);
+	void buildMesh(const std::vector<Point3>& points, const std::string &outputFile);
 
 	/*!
 	 * \brief printHelp     Prints help, explaining usage. Can be shown by calling the program with argument: "-help".

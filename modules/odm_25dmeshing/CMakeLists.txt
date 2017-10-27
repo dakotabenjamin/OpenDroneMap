@@ -9,7 +9,12 @@ if(CCACHE_FOUND)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 
-# Set pcl dir to the input spedified with option -DCGAL_DIR="path"
+# Find pcl at the location specified by PCL_DIR
+find_package(PCL 1.8 HINTS "${PCL_DIR}/share/pcl-1.8")
+
+include_directories(${PCL_ROOT}/include/pcl-${PCL_VERSION_MAJOR}.${PCL_VERSION_MINOR})
+
+# Set CGAL dir to the input spedified with option -DCGAL_DIR="path"
 set(CGAL_DIR "CGAL_DIR-NOTFOUND" CACHE "CGAL_DIR" "Path to the CGAL installation directory")
 
 # Link
@@ -44,7 +49,7 @@ if ( CGAL_FOUND )
   # Add exectuteable
   add_executable(${PROJECT_NAME} ${SRC_LIST})
 	
-  target_link_libraries(odm_25dmeshing ${CGAL_LIBRARIES} ${TBB_LIBRARIES})
+  target_link_libraries(odm_25dmeshing ${CGAL_LIBRARIES} ${TBB_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_FEATURES_LIBRARIES} ${PCL_IO_LIBRARIES} pcl_segmentation pcl_filters)
 else()
   
     message(FATAL_ERROR "This program requires the CGAL library, and will not be compiled.")
