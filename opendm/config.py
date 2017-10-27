@@ -243,14 +243,6 @@ def config():
                               'times slightly but helps reduce memory usage. '
                               'Default: %(default)s'))
     
-    parser.add_argument('--mesh-remove-outliers',
-                        metavar='<percent>',
-                        default=2,
-                        type=float,
-                        help=('Percentage of outliers to remove from the point set. Set to 0 to disable. '
-                              'Applies to 2.5D mesh only. '
-                              'Default: %(default)s'))
-
     parser.add_argument('--mesh-wlop-iterations',
                         metavar='<positive integer>',
                         default=35,

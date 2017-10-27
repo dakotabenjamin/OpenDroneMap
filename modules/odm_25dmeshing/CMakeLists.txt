@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
+
 # Set pcl dir to the input spedified with option -DCGAL_DIR="path"
 set(CGAL_DIR "CGAL_DIR-NOTFOUND" CACHE "CGAL_DIR" "Path to the CGAL installation directory")
 

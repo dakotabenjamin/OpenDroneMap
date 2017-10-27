@@ -6,20 +6,9 @@
 #include <unordered_map>
 #include <queue>
 
-#include <CGAL/wlop_simplify_and_regularize_point_set.h>
-#include <CGAL/bounding_box.h>
-#include <CGAL/remove_outliers.h>
-#include <CGAL/Polygon_mesh_processing/refine.h>
-#include <CGAL/Polygon_mesh_processing/fair.h>
-#include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Count_stop_predicate.h>
-#include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_length_cost.h>
-#include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Midpoint_placement.h>
-#include <CGAL/Inverse_index.h>
-
 #include "CGAL.hpp"
 #include "Logger.hpp"
 #include "PlyInterpreter.hpp"
-#include "PolyhedronBuilder.hpp"
 
 class Odm25dMeshing {
 public:
@@ -47,14 +36,19 @@ private:
 	void parseArguments(int argc, char** argv);
 
 	/*!
-	 * \brief loadPointCloud    Loads a PLY file with points and normals from file.
+	 * \brief loadPointCloud    Loads a PLY file with points from file.
 	 */
-	void loadPointCloud();
+	void loadPointCloud(const std::string &inputFile, const std::vector<Point3> &groundPoints, const std::vector<Point3> &nongroundPoints);
+
+	/*!
+	 * \brief preparePoints    Does gridding, smoothing, and places the results in destination
+	 */
+	void preparePoints(const std::vector<Point3>& points, const std::vector<Point3> &destination);
 
 	/*!
 	 * \brief loadPointCloud    Builds a 2.5D mesh from loaded points
 	 */
-	void buildMesh();
+	void buildMesh(std::vector<Point3>& points, const std::string &outputFile);
 
 	/*!
 	 * \brief printHelp     Prints help, explaining usage. Can be shown by calling the program with argument: "-help".
@@ -67,10 +61,7 @@ private:
 	std::string outputFile = "odm_25dmesh.ply";
 	std::string logFilePath = "odm_25dmeshing_log.txt";
 	unsigned int maxVertexCount = 100000;
-	double outliersRemovalPercentage = 2;
-	unsigned int wlopIterations = 35;
-	std::vector<Point3> points;
-	bool flipFaces = false;
+	unsigned int wlopIterations = 10;
 };
 
 class Odm25dMeshingException: public std::exception {

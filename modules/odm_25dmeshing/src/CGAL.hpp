@@ -1,14 +1,16 @@
 #pragma once
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Delaunay_mesh_face_base_2.h>
 #include <CGAL/Triangulation_2.h>
-#include <CGAL/Polyhedron_3.h>
-#include <CGAL/Surface_mesh_simplification/edge_collapse.h>
+#include <CGAL/bounding_box.h>
+#include <CGAL/compute_average_spacing.h>
+#include <CGAL/wlop_simplify_and_regularize_point_set.h>
+#include <CGAL/remove_outliers.h>
+#include <CGAL/jet_smooth_point_set.h>
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 typedef Kernel::FT FT;
@@ -21,11 +23,6 @@ typedef CGAL::Constrained_triangulation_face_base_2<Kernel> Fb;
 typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
 typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, Tds> CDT;
 
-typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
-typedef Polyhedron::HalfedgeDS HalfedgeDS;
-
-namespace SMS = CGAL::Surface_mesh_simplification;
-
 // Concurrency
 #ifdef CGAL_LINKED_WITH_TBB
 typedef CGAL::Parallel_tag Concurrency_tag;
@@ -33,6 +30,4 @@ typedef CGAL::Parallel_tag Concurrency_tag;
 typedef CGAL::Sequential_tag Concurrency_tag;
 #endif
 
-//typedef CGAL::First_of_pair_property_map<Pwn> Point_map;
-//typedef CGAL::Second_of_pair_property_map<Pwn> Normal_map;
 
