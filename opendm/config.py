@@ -103,6 +103,11 @@ def config():
                         type=float,
                         help='Override the ccd width information for the images')
 
+    parser.add_argument('--sparse',
+                        action='store_true',
+                        default=False,
+                        help='Set to run reconstruction on sparse cloud only')
+
     parser.add_argument('--min-num-features',
                         metavar='<integer>',
                         default=4000,

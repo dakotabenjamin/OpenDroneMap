@@ -15,6 +15,7 @@ class ODMOpenSfMCell(ecto.Cell):
         params.declare("matching_gps_neighbors", "The application arguments.", 8)
         params.declare("matching_gps_distance", "The application arguments.", 0)
         params.declare("fixed_camera_params", "Optimize internal camera parameters", True)
+        params.declare("sparse", "Only run sparse cloud", False)
 
     def declare_io(self, params, inputs, outputs):
         inputs.declare("tree", "Struct with paths", [])
@@ -124,7 +125,13 @@ class ODMOpenSfMCell(ecto.Cell):
                 log.ODM_WARNING('Found a valid OpenSfM meshed reconstruction file in: %s' %
                                 tree.opensfm_reconstruction_meshed)
 
-            if not args.use_pmvs:
+            if args.sparse:
+                system.run('PYTHONPATH=%s %s/bin/opensfm export_ply %s' %
+                           (context.pyopencv_path, context.opensfm_path, tree.opensfm))
+                system.run('PYTHONPATH=%s %s/bin/opensfm export_visualsfm %s' %
+                           (context.pyopencv_path, context.opensfm_path, tree.opensfm))
+
+            if not args.use_pmvs and not args.sparse:
                 if not io.file_exists(tree.opensfm_reconstruction_nvm) or rerun_cell:
                     system.run('PYTHONPATH=%s %s/bin/opensfm export_visualsfm %s' %
                                (context.pyopencv_path, context.opensfm_path, tree.opensfm))
