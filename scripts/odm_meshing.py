@@ -56,7 +56,9 @@ class ODMeshingCell(ecto.Cell):
 
         infile = tree.opensfm_model
         if args.use_pmvs:
-          infile = tree.pmvs_model
+            infile = tree.pmvs_model
+        if args.sparse:
+            infile = tree.opensfm_sparse_model
 
         if not io.file_exists(tree.odm_mesh) or rerun_cell:
             log.ODM_DEBUG('Writing ODM Mesh file in: %s' % tree.odm_mesh)

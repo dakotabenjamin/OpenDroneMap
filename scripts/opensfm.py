@@ -126,7 +126,7 @@ class ODMOpenSfMCell(ecto.Cell):
                                 tree.opensfm_reconstruction_meshed)
 
             if args.sparse:
-                system.run('PYTHONPATH=%s %s/bin/opensfm export_ply %s' %
+                system.run('PYTHONPATH=%s %s/bin/opensfm export_ply %s --no-cameras' %
                            (context.pyopencv_path, context.opensfm_path, tree.opensfm))
                 system.run('PYTHONPATH=%s %s/bin/opensfm export_visualsfm %s' %
                            (context.pyopencv_path, context.opensfm_path, tree.opensfm))
